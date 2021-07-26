@@ -1,8 +1,6 @@
 import os
-import math
 import argparse
 import numpy as np
-import matplotlib.pyplot as plt
 
 from scipy.io import wavfile
 from sklearn.preprocessing import normalize
@@ -57,7 +55,7 @@ class Sound():
 
 		#Elphy setup amplitude
 		dBref = 100
-		# Etienne's suggestion = 100 - np.log10(math.sqrt(2))*20
+		# E's suggestion = 100 - np.log10(math.sqrt(2))*20
 
 		A=10**((amplitude-dBref)/20)
 		self.amplitude = A
@@ -362,8 +360,3 @@ def main():
 if __name__=="__main__":
 	main()
 
-
-""" Note to self
-Maybe good to add a spectro plotting and save fig function to assess the integrity of the sound generated
-Need to normalize all the volume !!!!!
-"""
