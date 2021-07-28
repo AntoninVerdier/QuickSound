@@ -21,16 +21,20 @@ class Sound():
 
 	Constructors
 	------------
-	__init__(self, samplerate=80000)
+	__init__(self, samplerate=192000)
 		Initialize object and attribute
 	__add__(self, other)
-		Allow user to add two Sound's signals to create a more complex Sound object
+		Allow user to concatenate two Sound's signals
+	__mul__(self, other)
+		Allow user to overlap two Sound's signals
 
 	Methods
 	-------
 	delay(self, duration)
 		Generate a silence for a given duration
-	simple_freq(self, frequency, duration=1000)
+	noise(self, duration)
+		Generate a white noise for a given duration
+	pure_tone(self, frequency, duration=1000)
 		Generate a pure tone signal for a given duration
 	freq_modulation(self, start_freq, end_freq, duration=2500)
 		 a signal of increase or decreasing frequencies
@@ -40,6 +44,10 @@ class Sound():
 		Create a pure tone with noise in the background of increasing intensity
 	multi_freqs(self, freqs, duration=2500)
 		Generate multiple frequency harmonics
+	harmonics(self, base_freq, patterns, duration=500)
+		Generate patterns of harmonics
+	steps(self, start_freq, end_freq, nstep, spacing='Log', duration=500)
+		Generate a frequency modulated tone in steps
 	save_wav(self, name=None):
 		Save the signal as a .wav file
 
@@ -53,11 +61,9 @@ class Sound():
 		self.freq = None
 		self.samplerate = samplerate
 
-		#Elphy setup amplitude
 		dBref = 100
-		# E's suggestion = 100 - np.log10(math.sqrt(2))*20
-
 		A=10**((amplitude-dBref)/20)
+		
 		self.amplitude = A
 
 	def __add__(self, other):
@@ -99,8 +105,6 @@ class Sound():
 		"""
 		sample = int(duration * 0.001 * self.samplerate)
 		self.signal = np.array(np.zeros(sample))
-
-		# return self.signal
 
 	def noise(self, duration):
 		""" generate a white noise for a given duration
@@ -152,16 +156,8 @@ class Sound():
 		sweep = (start_freq + k/2 * time) * time
 		modulation = self.amplitude * np.sin(2* np.pi * sweep)
 
-		# modulation = signal.chirp(t, f0=4000, f1=16000, t1=10, method='linear')
-
-		# modulation = np.sin(2 * np.pi * frequencies * time)
-
-
 		self.signal = np.array(modulation)
 		self.freq = {'start_freq': start_freq, 'end_freq': end_freq}
-
-
-		# return modulation
 
 	def amplitude_modulation(self, freq, am_freq, duration=500, ramp=0.01):
 		"""Generate an aplitude-modulated tone at a reference frequency
@@ -210,8 +206,6 @@ class Sound():
 		self.signal = np.array(noisy_signal)
 		self.freq = {'freq': freq, 'noise_vol': noise_vol}
 
-		# return noisy_signal
-
 	def multi_freqs(self, freqs, duration=500):
 		""" Generate multiple frequencies sounds
 
@@ -253,7 +247,21 @@ class Sound():
 		self.freq['freq'] = base_freq
 
 	def steps(self, start_freq, end_freq, nstep, spacing='Log', duration=500):
+		"""Generate a frequency modulated tone in steps
 
+		Parameters
+		----------
+		start_freq : int
+			Starting frequency of the signal
+		end_freq : int
+			Ending frequency of the signal
+		nstep : int
+			Number of steps
+		spacing : str
+			Type of spacing between frequencies. Can be Linear or Log
+		duration : int, optional
+			Duration of the soudn sample in ms. Default is 500ms
+		"""
 		sample = int(duration * 0.001 * self.samplerate)
 		time = np.arange(sample)
 
@@ -278,18 +286,21 @@ class Sound():
 			current_tone = self.amplitude * np.sin(2 * np.pi * freq * step_times[i+1] / self.samplerate)
 			tone = np.concatenate((tone, current_tone))
 
-		print(tone)
 		self.signal = tone
 		self.freq = {'start_freq': start_freq, 'end_freq': end_freq}
 
 
 	def save_wav(self, path=None, name=None, bit16=True):
-		""" Save the signal as a .wav file
+		""" Saves the signal as a .wav file
 
 		Parameters
 		----------
 		name : str, optional
 			Name fo the file to save
+		path : str, optional
+			Defines a path where to save the wavfile
+		bit16 : bool, optional
+			Saves the sound as 16-bit integer. For Elphy software. Defaul is True
 		"""
 		assert self.signal is not None, 'You must define a signal to save'
 
