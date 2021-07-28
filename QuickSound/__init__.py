@@ -1,1 +1,1 @@
-from . import Sound
+from .Sound import Sound

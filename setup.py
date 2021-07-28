@@ -2,13 +2,13 @@ from distutils.core import setup
 setup(
   name = 'QuickSound',         
   packages = ['QuickSound'],   
-  version = '0.1',      
+  version = '0.3',      
   license='MIT',       
   description = 'QuickSound allows for rapid and simple generation of sample sounds at any samplerate.',   
   author = 'Antonin Verdier',                   
   author_email = 'antonin@verdier.fr',    
   url = 'https://github.com/Pouple/QuickSound',   
-  download_url = 'https://github.com/Pouple/QuickSound/archive/refs/tags/0.1.tar.gz',
+  download_url = 'https://github.com/Pouple/QuickSound/archive/refs/tags/0.3.tar.gz',
   keywords = ['Sound', 'Signal', 'Generation', 'Auditory', 'Music', 'Simple', 'Small'],   
   install_requires=[            
           'numpy',

@@ -10,7 +10,14 @@ Several methods are available to create the most basic sounds.
 
 ## Examples
 
-Creation of a simple pure tone at 6kHz with a duration of 800ms. Amplitude is in dB.
+Creation of a simple pure tone at 6kHz with a duration of 800ms. Amplitude is in dB. First begin by importing the Sound object from QuickSound
+
+```python
+from QuickSound import Sound
+```
+
+
+
 ```python
   s = Sound(samplerate=192000, amplitude=70)
   s.pure_tone(6e3, duration=800)
@@ -21,6 +28,8 @@ s.save_wav(name='Pure_tone', path='../Samples/')
 ```
 A more complex sound can be created by concatenating and overlaping already existing Sounds. However, they need to have the same samplerate.
 ```python
+from QuickSound import Sound
+
 s = Sound(samplerate=192000, amplitude=70)
 s.pure_tone(6e3, duration=800)
 
