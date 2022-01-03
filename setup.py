@@ -2,7 +2,7 @@ from distutils.core import setup
 setup(
   name = 'QuickSound',         
   packages = ['QuickSound'],   
-  version = '0.3',      
+  version = '0.5',      
   license='MIT',       
   description = 'QuickSound allows for rapid and simple generation of sample sounds at any samplerate.',   
   author = 'Antonin Verdier',                   

@@ -239,7 +239,7 @@ class Sound():
 		time = np.arange(sample)
 		patterns = [1] + patterns
 		all_freqs = np.sum(np.array([[a * np.sin(2 * np.pi * base_freq * (i + 1) * t / self.samplerate) for t in time] for i, a in enumerate(patterns)]), axis=0)
-		all_freqs = np.squeeze(normalize(all_freqs[np.newaxis, :], norm='max'))
+		all_freqs = all_freqs / len(patterns)
 		print(all_freqs.shape)
 
 		self.signal = all_freqs
@@ -265,25 +265,32 @@ class Sound():
 		sample = int(duration * 0.001 * self.samplerate)
 		time = np.arange(sample)
 
-		#times = [0]
 		times = [duration//nstep for i in range(nstep)][:-1]
-		#times[-1] += duration%nstep
 
 		times = np.cumsum(times) * 0.001 * self.samplerate
 		times = [int(t) for t in times]
 
 		step_times = np.split(time, times)
-
+		
 		if spacing == 'Log':
 			freq_steps = np.geomspace(start_freq, end_freq, nstep)
 
 		if spacing == 'Linear':
 			freq_steps = np.linspace(start_freq, end_freq, nstep)
 
+
 		tone = self.amplitude * np.sin(2 * np.pi * freq_steps[0] * step_times[0] / self.samplerate)
 
+		sample_period = self.samplerate / freq_steps[0]
+		ps = (len(tone) % sample_period) / sample_period
+
 		for i, freq in enumerate(freq_steps[1:]):
-			current_tone = self.amplitude * np.sin(2 * np.pi * freq * step_times[i+1] / self.samplerate)
+			sample_period = self.samplerate/freq
+			phase_shift = int(ps*sample_period)
+			current_tone = self.amplitude * np.sin(2 * np.pi * freq * np.arange(phase_shift, step_times[0][-1] + phase_shift) / self.samplerate)
+
+			ps = (len(current_tone) % sample_period) / sample_period
+
 			tone = np.concatenate((tone, current_tone))
 
 		self.signal = tone
