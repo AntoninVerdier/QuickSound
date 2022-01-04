@@ -5,6 +5,8 @@ import numpy as np
 from scipy.io import wavfile
 from sklearn.preprocessing import normalize
 
+import matplotlib.pyplot as plt
+
 class Sound():
 	""" Class for creating sound paradigm with multiple features
 
@@ -281,15 +283,24 @@ class Sound():
 
 		tone = self.amplitude * np.sin(2 * np.pi * freq_steps[0] * step_times[0] / self.samplerate)
 
-		sample_period = self.samplerate / freq_steps[0]
-		ps = (len(tone) % sample_period) / sample_period
 
 		for i, freq in enumerate(freq_steps[1:]):
-			sample_period = self.samplerate/freq
-			phase_shift = int(ps*sample_period)
-			current_tone = self.amplitude * np.sin(2 * np.pi * freq * np.arange(phase_shift, step_times[0][-1] + phase_shift) / self.samplerate)
 
-			ps = (len(current_tone) % sample_period) / sample_period
+
+			if tone[-1] < 0:
+				for i, v in enumerate(reversed(tone[-int(self.samplerate/(freq)):])):
+					if v > 0:
+						last_positive = i
+						break
+				tone = tone[:-(last_positive+ round(self.samplerate/(freq*2)))]
+			else:
+				for i, v in enumerate(reversed(tone[-int(self.samplerate/(freq)):])):
+					if v < 0:
+						last_negative = i
+						break
+				tone = tone[:-last_negative]
+
+			current_tone = self.amplitude * np.sin(2 * np.pi * freq * np.arange(step_times[0][-1]) / self.samplerate)
 
 			tone = np.concatenate((tone, current_tone))
 
@@ -337,6 +348,8 @@ def main():
 	 					help='Generate harmnics Enter frequencies in Hz')
 	parser.add_argument('--freqmod', '-fm', type=int, nargs=2,
 						help='Ramp frequency generation')
+	parser.add_argument('--steps', '-st', type=int, nargs=3,
+						help='Steps generation')
 	parser.add_argument('--duration', '-d', type=int, default=500,
 						help='Duration of the stimulus in ms')
 	parser.add_argument('--path', '-a', type=str, default='Samples/',
@@ -364,6 +377,11 @@ def main():
 			am = Sound()
 			am.amplitude_modulation(args.ampmod[0], args.ampmod[1], duration=args.duration)
 			am.save_wav(path=args.path, name=args.name)
+		
+		elif args.steps:
+			steps = Sound()
+			steps.steps(args.steps[0], args.steps[1], args.steps[2], duration=args.duration)
+			steps.save_wav(path=args.path, name=args.name)
 
 		elif args.freqmod:
 			freqmod = Sound()
