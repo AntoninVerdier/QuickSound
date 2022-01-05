@@ -248,7 +248,7 @@ class Sound():
 		self.freq = {'freq{}'.format(i): base_freq * (i+2) for i, a in enumerate(patterns)}
 		self.freq['freq'] = base_freq
 
-	def steps(self, start_freq, end_freq, nstep, spacing='Log', duration=500):
+	def steps(self, start_freq, end_freq, nstep, spacing='Log', duration=500, ramp=0.01):
 		"""Generate a frequency modulated tone in steps
 
 		Parameters
@@ -303,6 +303,13 @@ class Sound():
 			current_tone = self.amplitude * np.sin(2 * np.pi * freq * np.arange(step_times[0][-1]) / self.samplerate)
 
 			tone = np.concatenate((tone, current_tone))
+
+		if ramp:
+			ramp_len = int(self.samplerate * ramp)
+			ramp_sample = np.linspace(0, 1, ramp_len)
+			tone[:ramp_len] = tone[:ramp_len] * ramp_sample
+			tone[-ramp_len:] = tone[-ramp_len:] * list(reversed(ramp_sample))
+
 
 		self.signal = tone
 		self.freq = {'start_freq': start_freq, 'end_freq': end_freq}
