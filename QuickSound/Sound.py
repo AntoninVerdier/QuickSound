@@ -310,6 +310,8 @@ class Sound():
 			tone[:ramp_len] = tone[:ramp_len] * ramp_sample
 			tone[-ramp_len:] = tone[-ramp_len:] * list(reversed(ramp_sample))
 
+		tone = np.pad(tone, (0, int(duration * 0.001 * self.samplerate)))
+
 
 		self.signal = tone
 		self.freq = {'start_freq': start_freq, 'end_freq': end_freq}
