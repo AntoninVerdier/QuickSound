@@ -331,16 +331,20 @@ class Sound():
 		"""
 		assert self.signal is not None, 'You must define a signal to save'
 
+
+
 		if name is None:
 			name = self.name
 
 		if bit16:
-			self.signal = np.array(self.signal*32767).astype(np.int16)
+			signal = np.array(self.signal*32767).astype(np.int16)
+
+		signal = self.signal
 
 		if path is None:
-			wavfile.write(os.path.join('../Samples/{}.wav'.format(name)), self.samplerate, self.signal)
+			wavfile.write(os.path.join('../Samples/{}.wav'.format(name)), self.samplerate, signal)
 		else:
-			wavfile.write(os.path.join(path, name + '.wav'), self.samplerate, self.signal)
+			wavfile.write(os.path.join(path, name + '.wav'), self.samplerate, signal)
 
 def main():
 	parser = argparse.ArgumentParser(description='Parameters for computing')
@@ -374,7 +378,7 @@ def main():
 
 		if args.puretone:
 			pure = Sound()
-			pure.simple_freq(args.puretone, duration=args.duration)
+			pure.pure_tone(args.puretone, duration=args.duration)
 			pure.save_wav(path=args.path, name=args.name)
 
 		elif args.noise:
