@@ -1,7 +1,7 @@
 import os
 import argparse
 import numpy as np
-
+import scipy.signal as cignal
 from scipy.io import wavfile
 from sklearn.preprocessing import normalize
 
@@ -36,6 +36,8 @@ class Sound():
 		Generate a silence for a given duration
 	noise(self, duration)
 		Generate a white noise for a given duration
+	colored_noise(self, duration, type='pink')
+		Generate a colored noise for a given duration
 	pure_tone(self, frequency, duration=1000)
 		Generate a pure tone signal for a given duration
 	freq_modulation(self, start_freq, end_freq, duration=2500)
@@ -118,6 +120,28 @@ class Sound():
 		"""
 		sample = int(duration * 0.001 * self.samplerate)
 		self.signal = self.amplitude * np.random.normal(0, 1, size=sample)
+
+	def colored_noise(self, duration, type='pink', freqs=[500, 1500]):
+		""" generate a white noise for a given duration
+
+		Parameters
+		----------
+		duration : int
+			Duration of the noise in ms
+		type : str, optional
+			Type of colored noise. Only pink is available
+		"""
+
+		# WIP
+		sample = int(duration * 0.001 * self.samplerate)
+		sig = np.random.normal(0, 1, size=sample)
+		if type=='pink':
+			sos = cignal.butter(1, freqs, 'bandpass', fs=self.samplerate, output='sos')
+		
+		filtered = cignal.sosfilt(sos, sig)
+
+		self.signal = self.amplitude * filtered
+
 
 	def pure_tone(self, frequency,  duration=500):
 
@@ -408,4 +432,3 @@ def main():
 
 if __name__=="__main__":
 	main()
-
