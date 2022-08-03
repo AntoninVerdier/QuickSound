@@ -48,8 +48,6 @@ class Sound():
 		Create a pure tone with noise in the background of increasing intensity
 	multi_freqs(self, freqs, duration=2500)
 		Generate multiple frequency harmonics
-	harmonics(self, base_freq, patterns, duration=500)
-		Generate patterns of harmonics
 	steps(self, start_freq, end_freq, nstep, spacing='Log', duration=500)
 		Generate a frequency modulated tone in steps
 	save_wav(self, name=None):
@@ -139,9 +137,9 @@ class Sound():
 			sos = cignal.butter(1, freqs, 'bandpass', fs=self.samplerate, output='sos')
 		
 		filtered = cignal.sosfilt(sos, sig)
-
+		filtered = filtered/(np.max(filtered) - np.min(filtered))
+		
 		self.signal = self.amplitude * filtered
-
 
 	def pure_tone(self, frequency,  duration=500):
 
@@ -244,33 +242,12 @@ class Sound():
 		"""
 		sample = int(duration * 0.001 * self.samplerate)
 		time = np.arange(sample)
-		all_freqs = np.sum(np.array([[np.sin(2 * np.pi * freq * t / self.samplerate) for t in time] for freq in freqs]), axis=0)
-		all_freqs = np.squeeze(normalize(all_freqs[np.newaxis, :], norm='max'))
+		all_freqs = np.sum(np.array([[self.amplitude * np.sin(2 * np.pi * freq * t / self.samplerate) for t in time] for freq in freqs]), axis=0)
+		#all_freqs = np.squeeze(normalize(all_freqs[np.newaxis, :], norm='max'))
 
 		self.signal = all_freqs
 		self.freq = {'freq{}'.format(i): f for i, f in enumerate(freqs)}
 
-	def harmonics(self, base_freq, patterns, duration=500):
-		""" Generate patterns of harmonics
-
-		Parameters
-		----------
-		base_freq : int
-			Fundamental frequency
-		patterns : list
-			List of integers of relative amplitude of each harmonic. Begins at the first harmonic
-		duration : int
-		"""
-		sample = int(duration * 0.001 * self.samplerate)
-		time = np.arange(sample)
-		patterns = [1] + patterns
-		all_freqs = np.sum(np.array([[a * np.sin(2 * np.pi * base_freq * (i + 1) * t / self.samplerate) for t in time] for i, a in enumerate(patterns)]), axis=0)
-		all_freqs = all_freqs / len(patterns)
-		print(all_freqs.shape)
-
-		self.signal = all_freqs
-		self.freq = {'freq{}'.format(i): base_freq * (i+2) for i, a in enumerate(patterns)}
-		self.freq['freq'] = base_freq
 
 	def steps(self, start_freq, end_freq, nstep, spacing='Log', duration=500, ramp=0.01):
 		"""Generate a frequency modulated tone in steps
@@ -341,7 +318,7 @@ class Sound():
 		self.freq = {'start_freq': start_freq, 'end_freq': end_freq}
 
 
-	def save_wav(self, path=None, name=None, bit16=True):
+	def save_wav(self, path=None, name=None, bit16=True, ramp=0.01):
 		""" Saves the signal as a .wav file
 
 		Parameters
@@ -355,8 +332,13 @@ class Sound():
 		"""
 		assert self.signal is not None, 'You must define a signal to save'
 
-
-
+		if ramp:
+			ramp_len = int(self.samplerate * ramp)
+			ramp_sample = np.linspace(0, 1, ramp_len)
+			amplitude = np.ones(len(self.signal))
+			amplitude[:ramp_len] = amplitude[:ramp_len] * ramp_sample
+			amplitude[-ramp_len:] = amplitude[-ramp_len:] * list(reversed(ramp_sample))
+			self.signal = self.signal * amplitude
 		if name is None:
 			name = self.name
 
